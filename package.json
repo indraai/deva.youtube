@@ -1,6 +1,6 @@
 {
   "name": "@feecting/youtubedeva",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "The Youtube Deva",
   "main": "index.js",
   "scripts": {
