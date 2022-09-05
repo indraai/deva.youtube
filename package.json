@@ -1,0 +1,27 @@
+{
+  "name": "@feecting/youtubedeva",
+  "version": "0.0.1",
+  "description": "The Youtube Deva",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/indraai/YoutubeDeva.git"
+  },
+  "keywords": [
+    "Youtube",
+    "Deva"
+  ],
+  "author": "Quinn Michaels",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/indraai/YoutubeDeva/issues"
+  },
+  "dependencies": {
+    "@feecting/deva": "^1.0.25",
+    "googleapis": "^87.0.0"
+  },
+  "homepage": "https://github.com/indraai/YoutubeDeva#readme"
+}

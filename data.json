@@ -1,0 +1,165 @@
+{
+  "name": "YouTube Deva Data File",
+  "describe": "The main Data file for YouTube Deva",
+  "copyright": "Copyright (c)2021 Quinn Michaels. All rights reserved.",
+  "data": {
+    "agent": {
+      "uid": "5198394503326",
+      "key": "youtube",
+      "name": "YouTube Deva",
+      "describe": "YouTube Deva Buddy",
+      "prompt": {
+        "emoji": "🍿",
+        "text": "youtube",
+        "colors": {
+          "label": {
+            "R": 196,
+            "G": 48,
+            "B": 48
+          },
+          "text": {
+            "R": 196,
+            "G": 48,
+            "B": 48
+          }
+        }
+      },
+      "voice": {
+        "speech": "Alex",
+        "speed": 1
+      },
+      "profile": {
+        "emoji": "/public/devas/youtube/emoji.png",
+        "avatar": "/public/devas/youtube/avatar.png",
+        "background": "/assets/img/indra-background.jpg",
+        "describe": "YouTube Deva Buddy",
+        "gender": "M"
+      }
+    },
+    "vars": {
+      "messages": {
+        "init": "🟠 INIT",
+        "start": "🔵 START",
+        "enter": "🟢 ENTER",
+        "stop": "🔴 STOP",
+        "exit": "🟡 EXIT",
+        "done": "🟣 DONE",
+        "error": "💣 ERROR!",
+        "params": "⛔️ NO PARAMS!",
+        "packet": "⛔️ NO PACKET!",
+        "auth": "✅ AUTH COMPLETE",
+        "acct": "Youtube acct switched.",
+        "accterr": "That is not a valid account.",
+        "chatid": "🤝",
+        "chatreset": "Live Chat Reset",
+        "nochat": "There is no active live chat.",
+        "livechat": "The live chat has been set.",
+        "labels": {
+          "video": "Video",
+          "channel": "Channel",
+          "comments": "View Comments",
+          "comment": "Write Comment",
+          "tweet": "Tweet",
+          "livechat": "Live Chat",
+          "playlist": "Playlist",
+          "like": "👍"
+        },
+        "quota": "ERROR - API Quote Limit"
+      },
+      "scopes": [
+        "https://www.googleapis.com/auth/youtube",
+        "https://www.googleapis.com/auth/youtube.readonly",
+        "https://www.googleapis.com/auth/youtube.force-ssl"
+      ],
+      "acct": {
+        "key": "brian",
+        "index": 0
+      },
+      "errors": {
+        "quota": "quotaExceeded"
+      },
+      "maxResults": 25,
+      "order": "relevance",
+      "type": "video",
+      "polling": {
+        "liveChatMessages": 10
+      },
+      "promoter": {
+        "timer": false,
+        "timing": 1
+      },
+      "params": {
+        "silence": {
+          "max": 10,
+          "tracker": 0
+        },
+
+        "search": {
+          "part": "id,snippet",
+          "maxResults": 10,
+          "order": "date",
+          "type": "video",
+          "region": "US",
+          "lang": "en",
+          "event": "live"
+        },
+
+        "video": {
+          "part": "id, snippet, statistics, status, liveStreamingDetails"
+        },
+
+        "channel": {
+          "mine": true,
+          "id": false,
+          "part": "id,snippet,contentDetails,statistics"
+        },
+
+        "comments": {
+          "videoId": false,
+          "part": "id, snippet, replies",
+          "maxResults": 10
+        },
+
+        "comment": {
+          "channelId": false,
+          "videoId": false,
+          "part": "id, snippet, replies"
+        },
+
+        "subscriptions": {
+          "mine": true,
+          "channelId": false,
+          "part": "id,snippet"
+        },
+
+        "playlists": {
+          "mine": true,
+          "part": "id, snippet, contentDetails, status",
+          "maxResults": 20
+        },
+
+        "playlist": {
+          "playlistId": false,
+          "maxResults": 10,
+          "part": "id,snippet,contentDetails, status"
+        },
+
+        "liveChatMessages": {
+          "liveChatId": false,
+          "maxResults": 200,
+          "part": "id,snippet"
+        },
+
+        "rate": {
+          "id": false,
+          "rating": "like"
+        }
+      },
+      "store": {
+        "channel": false,
+        "subscriptions": false,
+        "uploads": false
+      }
+    }
+  }
+}
