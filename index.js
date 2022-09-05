@@ -66,11 +66,11 @@ const YOUTUBE = new Deva({
         // if the accounts are the same then return the message
         if (this.vars.acct.key === opts.key) return resolve({text:this.vars.messages.acct});
         try {
-          const index = opts.index || this.vars.acct.index; //temp storage for later.
-          const acct = this.client.services.youtube[key][index];
+          opts.index = opts.index || this.vars.acct.index; //temp storage for later.
+          const acct = this.client.services.youtube[opts.key][opts.index];
           if (!acct) return resolve({text:this.vars.messages.accounterr});
-          this.vars.acct.key = key;
-          this.vars.acct.index = _index;
+          this.vars.acct.key = opts.key;
+          this.vars.acct.index = opts.index;
         } catch (err) {
           return this.error(err, opts, reject);
         } finally {
