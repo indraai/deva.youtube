@@ -383,6 +383,7 @@ const YOUTUBE = new Deva({
 
     setAuth() {
       return new Promise((resolve, reject) => {
+        if (!this.client.services.youtube) return resolve('NO SERVICE');
         try {
           const auth = this.client.services.youtube;
           const accts = Object.keys(auth);
