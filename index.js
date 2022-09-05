@@ -66,12 +66,10 @@ const YOUTUBE = new Deva({
         // if the accounts are the same then return the message
         if (this.vars.acct.key === opts.key) return resolve({text:this.vars.messages.acct});
         try {
-          const _index = opts.index || this.vars.acct.index; //temp storage for later.
-          const _acct = this.vars.accts.find(a => {
-            return opts.key && a.key === opts.key
-          });
-          if (!_acct) return resolve({text:this.vars.messages.accounterr});
-          this.vars.acct = _acct;
+          const index = opts.index || this.vars.acct.index; //temp storage for later.
+          const acct = this.client.services.youtube[key][index];
+          if (!acct) return resolve({text:this.vars.messages.accounterr});
+          this.vars.acct.key = key;
           this.vars.acct.index = _index;
         } catch (err) {
           return this.error(err, opts, reject);
@@ -698,6 +696,7 @@ const YOUTUBE = new Deva({
       if (!liveChatId) return Promise.resolve({text:false});
 
       const {params} = packet.q.meta;
+
       if (params.length) {
         const opts = {
           key: params[1] || this.vars.acct.key,
