@@ -396,8 +396,8 @@ const YOUTUBE = new Deva({
             const authlen = auth[a].length
             for (let x = 0; x < authlen; x++) {
               this.modules[a][x] = {};
-              const {secret, token} = acct[x];
-              this.modules[acct.key][x].oAuth = new Oauth2(
+              const {secret, token} = auth[a][x];
+              this.modules[a][x].oAuth = new Oauth2(
                 secret.installed.client_id,
                 secret.installed.client_secret,
                 secret.installed.redirect_uris[0]
