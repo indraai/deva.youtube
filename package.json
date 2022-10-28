@@ -1,5 +1,5 @@
 {
-  "name": "@feecting/youtubedeva",
+  "name": "@indra.ai/youtubedeva",
   "version": "0.0.5",
   "description": "The Youtube Deva",
   "main": "index.js",
@@ -20,7 +20,7 @@
     "url": "https://github.com/indraai/YoutubeDeva/issues"
   },
   "dependencies": {
-    "@feecting/deva": "^1.0.25",
+    "@indra.ai/deva": "^1.0.25",
     "googleapis": "^87.0.0"
   },
   "homepage": "https://github.com/indraai/YoutubeDeva#readme"
