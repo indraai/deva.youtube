@@ -47,6 +47,8 @@
         "error": "💣 ERROR!",
         "params": "⛔️ NO PARAMS!",
         "packet": "⛔️ NO PACKET!",
+        "opts": "⛔️ NO OPTIONS!",
+        "active": "⛔️ YOUTUBE INACTIVE!",
         "auth": "✅ AUTH COMPLETE",
         "acct": "Youtube acct switched.",
         "accterr": "That is not a valid account.",
@@ -64,7 +66,8 @@
           "playlist": "Playlist",
           "like": "👍"
         },
-        "quota": "ERROR - API Quote Limit"
+        "quota": "ERROR - API Quote Limit",
+        "active": false
       },
       "scopes": [
         "https://www.googleapis.com/auth/youtube",

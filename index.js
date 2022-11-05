@@ -64,6 +64,9 @@ const YOUTUBE = new Deva({
     ***************/
     acct(opts) {
       return new Promise((resolve, reject) => {
+        if (!this.vars.active) return resolve(this.vars.messages.active);
+        if (!opts) return resolve(this.vars.messages.opts);
+
         // if the accounts are the same then return the message
         if (this.vars.acct.key === opts.key) return resolve({text:this.vars.messages.acct});
         try {
@@ -84,7 +87,9 @@ const YOUTUBE = new Deva({
       let data = {};
       const {labels} = this.vars.messages;
       return new Promise((resolve, reject) => {
-        if (!id) return reject(this.vars.messages.params);
+        if (!this.vars.active) return resolve(this.vars.messages.active);
+        if (!id) return resolve(this.vars.messages.opts);
+
         this.func._list('videos', {id, part: this.vars.params.video.part}).then(videos => {
 
           data = videos.data.items;
@@ -198,6 +203,9 @@ const YOUTUBE = new Deva({
       const {text, meta} = opts;
       // build the packet to send to youtube from the data element variables.
       return new Promise((resolve, reject) => {
+        if (!this.vars.active) return resolve(this.vars.messages.active);
+        if (!opts) return resolve(this.vars.messages.opts);
+
         const {key, index} = this.vars.acct;
         if (!params) return reject(this.vars.messages.params);
         this.modules[key][index].yt.videos.rate({
@@ -223,6 +231,9 @@ const YOUTUBE = new Deva({
       };
 
       return new Promise((resolve, reject) => {
+        if (!this.vars.active) return resolve(this.vars.messages.active);
+        if (!channelId) return resolve(this.vars.messages.opts);
+
         this.func._list('channels', this.vars.params.channel).then(channels => {
           return resolve(channels.data.items[0])
         }).catch(err => {
@@ -231,13 +242,13 @@ const YOUTUBE = new Deva({
       });
     },
 
-    playlist(params) {
+    playlist(opts) {
       return new Promise((resolve, reject) => {
-        if (!params.playlistId) return reject(this.vars.messages.params);
-        this.func._list('playlistItems', params).then(pl => {
+        if (!this.vars.active) return resolve(this.vars.messages.active);
+        this.func._list('playlistItems', opts).then(pl => {
           return resolve(pl.data)
         }).catch(err => {
-          return this.error(err, params, reject);
+          return this.error(err, opts, reject);
         });
       });
     },
@@ -261,6 +272,8 @@ const YOUTUBE = new Deva({
         }
       }
       return new Promise((resolve, reject) => {
+        if (!this.vars.active) return resolve(this.vars.messages.active);
+
         this.func._list('subscriptions', params).then(subscr => {
           // set the subscriptions variable with a new map of subscr
           return resolve(subscr.data);
@@ -272,6 +285,8 @@ const YOUTUBE = new Deva({
 
     liveBroadcast(id=false) {
       return new Promise((resolve, reject) => {
+        if (!this.vars.active) return resolve(this.vars.messages.active);
+
         this.func._list('live', {
           id,
         }).then(broadcast => {
@@ -284,6 +299,9 @@ const YOUTUBE = new Deva({
 
     liveChat(text) {
       return new Promise((resolve, reject) => {
+        if (!this.vars.active) return resolve(this.vars.messages.active);
+        if (!text) return resolve(this.vars.messages.opts);
+
         let data = {};
         if (!this.vars.params.liveChatMessages.liveChatId) return resolve({text:false})
         this.func._insert('liveChatMessages', {
@@ -324,15 +342,18 @@ const YOUTUBE = new Deva({
 
     /**************
     func: liveChatMessages
-    params: packet
-    describe: Return packet messages for a livechat id.
+    params: opts
+    describe: Return opts messages for a livechat id.
     ***************/
-    liveChatMessages(packet) {
+    liveChatMessages(opts) {
       return new Promise((resolve, reject) => {
-        this.vars.params.liveChatMessages.liveChatId = packet.q.meta.params[1] || this.vars.params.liveChatMessages.liveChatId;
-        this.vars.params.liveChatMessages.maxResuls = packet.q.meta.params[2] || this.vars.params.liveChatMessages.maxResults;
+        if (!this.vars.active) return resolve(this.vars.messages.active);
+        if (!opts) return resolve(this.vars.messages.opts);
 
-        if (packet.q.meta.params[3]) this.vars.params.liveChatMessages.pageToken = packet.q.meta.params[3];
+        this.vars.params.liveChatMessages.liveChatId = opts.q.meta.params[1] || this.vars.params.liveChatMessages.liveChatId;
+        this.vars.params.liveChatMessages.maxResuls = opts.q.meta.params[2] || this.vars.params.liveChatMessages.maxResults;
+
+        if (opts.q.meta.params[3]) this.vars.params.liveChatMessages.pageToken = opts.q.meta.params[3];
 
         this.func._list('liveChatMessages', this.vars.params.liveChatMessages).then(messages => {
           this.vars.params.liveChatMessages.pageToken = messages.data.nextPageToken;
@@ -342,7 +363,7 @@ const YOUTUBE = new Deva({
             data: messages.data
           })
         }).catch(err => {
-          return this.error(err, packet, reject);
+          return this.error(err, opts, reject);
         })
       });
     },
@@ -358,6 +379,8 @@ const YOUTUBE = new Deva({
 
     onStartLoad() {
       return new Promise((resolve, reject) => {
+        if (!this.vars.active) return resolve(this.vars.messages.active);
+
         const { channel, subscriptions, playlist } = this.func;
         // let's get our channel
         channel().then(ch => {
@@ -382,7 +405,7 @@ const YOUTUBE = new Deva({
 
     setAuth() {
       return new Promise((resolve, reject) => {
-        if (!this.client.services.youtube) return resolve('NO SERVICE');
+        if (!this.vars.active) return resolve(this.vars.messages.active);
         try {
           const auth = this.client.services.youtube;
           const accts = Object.keys(auth);
@@ -431,7 +454,9 @@ const YOUTUBE = new Deva({
     ***************/
     comments(packet) {
       return new Promise((resolve, reject) => {
-        if (!packet) return reject(this.vars.messages.packet);
+        if (!this.vars.active) return resolve(this.vars.messages.active);
+        if (!packet) return resolve(this.vars.messages.packet);
+
         let data = false;
         this.func.comments(packet).then(result => {
           data = result.data.items;
@@ -483,7 +508,9 @@ const YOUTUBE = new Deva({
     playlist(packet) {
       let data = false;
       return new Promise((resolve, reject) => {
-        if (!packet) return reject(this.vars.messages.packet);
+        if (!this.vars.active) return resolve(this.vars.messages.active);
+        if (!packet) return resolve(this.vars.messages.packet);
+
         this.vars.params.playlist.playlistId = packet.q.text,
         this.func.playlist(this.vars.params.playlist).then(result => {
           data = result;
@@ -521,7 +548,9 @@ const YOUTUBE = new Deva({
     ***************/
     channel(packet) {
       return new Promise((resolve, reject) => {
-        if (!packet) return reject(this.vars.messages.packet)
+        if (!this.vars.active) return resolve(this.vars.messages.active);
+        if (!packet) return resolve(this.vars.messages.packet);
+
         let data = false;
         const channelId = packet && packet.q.text ? packet.q.text : false;
         this.func.channel(channelId).then(result => {
@@ -563,7 +592,8 @@ const YOUTUBE = new Deva({
     search(packet) {
       // #youtubesearch max:order:
       return new Promise((resolve, reject) => {
-        if (!packet) return reject(this.vars.messages.packet)
+        if (!this.vars.active) return resolve(this.vars.messages.active);
+        if (!packet) return resolve(this.vars.messages.packet);
 
         let data = false;
         this.func.search({
@@ -612,6 +642,9 @@ const YOUTUBE = new Deva({
     ***************/
     streams(packet) {
       return new Promise((resolve, reject) => {
+        if (!this.vars.active) return resolve(this.vars.messages.active);
+        if (!packet) return resolve(this.vars.messages.packet);
+
         let data = false;
 
         this.func.search({
@@ -675,6 +708,9 @@ const YOUTUBE = new Deva({
               live stream chats will be sent to.
     ***************/
     chatid(packet) {
+      if (!packet) return Promise.resolve(this.vars.messages.packet);
+      if (!this.vars.active) return Promise.resolve(this.vars.messages.active);
+
       if (packet.q.meta.params[1] === 'reset') {
         this.vars.params.liveChatMessages.liveChatId = false;
         return Promise.resolve({text:this.vars.messages.chatreset});
@@ -720,7 +756,7 @@ const YOUTUBE = new Deva({
     ***************/
     chats(packet) {
       const {liveChatId} = this.vars.params.liveChatMessages;
-      if (!liveChatId) return Promise.resolve({text:false});
+      if (!liveChatId) return Promise.resolve(this.vars.messages.nochat);
 
       return this.func.liveChatMessages(packet);
     },
@@ -733,7 +769,6 @@ const YOUTUBE = new Deva({
               videos function to retrieve data from the Youtube api.
     ***************/
     video(packet) {
-      if (!packet) return Promise.reject(this.vars.messages.packet);
       return this.func.video(packet.q.text);
     },
 
@@ -756,6 +791,9 @@ const YOUTUBE = new Deva({
       }
 
       return new Promise((resolve, reject) => {
+        if (!packet) return resolve(this.vars.messages.packet);
+        if (!this.vars.active) return resolve(this.vars.messages.active);
+
         this.func.subscriptions().then(results => {
           data = result.items;
           const text = result.items.map(itm => {
@@ -851,14 +889,20 @@ const YOUTUBE = new Deva({
   },
 
   onInit() {
-    this.func.setAuth().then(auth => {
-      return this.func.onStartLoad(auth);
-    }).then(started => {
-      this.prompt(this.vars.messages.init);
+    if (this.client.services.youtube) {
+      this.vars.active = true;
+      this.func.setAuth().then(auth => {
+        return this.func.onStartLoad(auth);
+      }).then(started => {
+        this.prompt(this.vars.messages.init);
+        return this.start();
+      }).catch(err => {
+        return this.error(err);
+      });
+    }
+    else {
       return this.start();
-    }).catch(err => {
-      return this.error(err);
-    });
+    }
   },
 });
 module.exports = YOUTUBE
