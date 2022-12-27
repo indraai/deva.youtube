@@ -286,6 +286,7 @@ const YOUTUBE = new Deva({
       return new Promise((resolve, reject) => {
         let data = {};
         if (!this.vars.params.liveChatMessages.liveChatId) return resolve({text:false})
+
         this.func._insert('liveChatMessages', {
           part: 'snippet',
           properties: {
@@ -304,6 +305,17 @@ const YOUTUBE = new Deva({
           }
         }).then(message => {
           data = message.data;
+
+          this.talk(`${this.agent.key}:chat`, {
+            id:this.uid(),
+            agent: this.agent,
+            data: {
+              key: this.vars.acct.key,
+              text,
+            },
+            created: Date.now(),
+          });
+
           const html = [
             '::begin:chat',
             text,
@@ -311,6 +323,7 @@ const YOUTUBE = new Deva({
           ].join('\n');
           return this.question(`#feecting parse:${this.agent.key}:chat ${text}`);
         }).then(parsed => {
+
           return resolve({
             text: parsed.a.text,
             html: parsed.a.html,
@@ -705,7 +718,7 @@ const YOUTUBE = new Deva({
         }
         // if parameters set the account before sending to the function.
         return this.func.acct(opts).then(acct => {
-           return this.func.liveChat(packet.q.text);
+          return this.func.liveChat(packet.q.text);
         });
       }
       else {
