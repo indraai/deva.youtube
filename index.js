@@ -484,7 +484,21 @@ const YOUTUBE = new Deva({
       const {params} = packet.q.meta;
       if (params[1]) this.vars.params.comment.channelId = params[1];
       if (params[2]) this.vars.params.comment.videoId = params[2];
-      return this.func.comment(packet.q.text);
+
+      // if params[3] then set the account to comment from.
+      if (params[3]) {
+        const opts = {
+          key: params[3] || this.vars.acct.key,
+          index: params[4] || this.vars.acct.index,
+        }
+        // if parameters set the account before sending to the function.
+        return this.func.acct(opts).then(acct => {
+          return this.func.comment(packet.q.text);
+        });
+      }
+      else {
+        return this.func.comment(packet.q.text);
+      }
     },
 
     /**************
