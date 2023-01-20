@@ -187,7 +187,12 @@ const YOUTUBE = new Deva({
       return new Promise((resolve, reject) => {
         if (!params) return reject(this.vars.messages.params);
         this.func._insert('commentThreads', params).then(result => {
-          return resolve(result.data);
+          console.log('YOUTUBE DATA', result.data);
+          return resolve({
+            text,
+            html: text,
+            data: result.data
+          });
         }).catch(err => {
           return this.error(err, text, reject);
         })
