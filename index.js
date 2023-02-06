@@ -97,7 +97,7 @@ const YOUTUBE = new Deva({
               `describe: ${itm.snippet.description.replace(/\n|\r/g, ' ')}`,
               '::begin:buttons',
               `cmd[${labels.like}]:#youtube rate:${itm.id} like`,
-              `cmd[${labels.comments}]:#youtube comments ${itm.id}`,
+              `cmd[${labels.comments}]:#youtube comments:${itm.id}`,
               `tty[${labels.comment}]:#youtube comment:${itm.snippet.channelId}:${itm.id} `,
               isLive ? `cmd[${labels.livechat}]:#youtube chatid:${itm.liveStreamingDetails.activeLiveChatId}` : '',
               '::end:buttons',
@@ -159,11 +159,105 @@ const YOUTUBE = new Deva({
     },
 
     // get comments for a video
-    comments(packet) {
-      if (packet.q.text) this.vars.params.comments.videoId = packet.q.text;
-      if (packet.q.meta.params[1]) this.vars.params.comments.maxResults = packet.q.meta.params[1];
-      return this.func._list('commentThreads', this.vars.params.comments);
+    comments(opts) {
+      return new Promise((resolve, reject) => {
+        let data;
+        if (opts.meta.params[1]) this.vars.params.comments.videoId = opts.meta.params[1];
+        if (opts.meta.params[2]) this.vars.params.comments.maxResults = opts.meta.params[2];
+
+
+        this.func._list('commentThreads', this.vars.params.comments).then(result => {
+          data = result.data;
+
+          console.log('YOUTUBE COMMENTS', JSON.stringify(result.data, false, 2));
+
+          const text = result.data.items.map(itm => {
+            const {topLevelComment, canReply, totalReplyCount} = itm.snippet;
+            const {
+              authorProfileImageUrl,
+              textOriginal,
+              authorDisplayName,
+              publishedAt,
+              likeCount,
+              videoId
+            } = topLevelComment.snippet;
+            return [
+              `::begin:comment`,
+              `avatar: ${authorProfileImageUrl}`,
+              `::begin:details`,
+              `::begin:text`,
+              `${textOriginal}`,
+              `::end:text`,
+              `\n-\n`,
+              `author: ${authorDisplayName}`,
+              `date: ${publishedAt}`,
+              `likes: ${likeCount}`,
+              `::begin:buttons`,
+              canReply ? `tty[reply]:#youtube reply:${topLevelComment.id}` : '',
+              totalReplyCount ? `cmd[replies (${totalReplyCount})]:#youtube replies:${topLevelComment.id}` : '',
+              `::end:buttons`,
+              `::end:details`,
+              `::end:comment`,
+            ].join('\n');
+          }).join('\n');
+
+          return this.question(`#feecting parse:${this.agent.key}:comments ${text}`);
+        }).then(parsed => {
+          return resolve({
+            text: parsed.a.text,
+            html: parsed.a.html,
+            data
+          });
+        }).catch(err => {
+          return this.error(err, this.vars.params.comments, reject);
+        });
+      });
     },
+
+    // get comments for a video
+    replies(opts) {
+      return new Promise((resolve, reject) => {
+        if (opts.meta.params[1]) this.vars.params.replies.parentId = opts.meta.params[1];
+        if (opts.meta.params[2]) this.vars.params.replies.maxResults = opts.meta.params[2];
+        let data;
+
+        this.func._list('comments', this.vars.params.replies).then(result => {
+          data = result.data;
+
+          console.log('YOUTUBE replies', JSON.stringify(result.data, false, 2));
+
+          const text = result.data.items.map(itm => {
+            const {textOriginal, authorDisplayName, authorProfileImageUrl, publishedAt, likeCount} = itm.snippet;
+
+            return [
+              `::begin:comment`,
+              `avatar: ${authorProfileImageUrl}`,
+              `::begin:details`,
+              `::begin:text`,
+              `${textOriginal}`,
+              `::end:text`,
+              `\n-\n`,
+              `author: ${authorDisplayName}`,
+              `date: ${publishedAt}`,
+              `likes: ${likeCount}`,
+              `::end:details`,
+              `::end:comment`,
+            ].join('\n');
+          }).join('\n');
+
+          return this.question(`#feecting parse:${this.agent.key}:replies ${text}`);
+        }).then(parsed => {
+          return resolve({
+            text: parsed.a.text,
+            html: parsed.a.html,
+            data
+          });
+        }).catch(err => {
+          return this.error(err, this.vars.params.comments, reject);
+        });
+      });
+    },
+
 
     comment(text) {
       const {part, channelId, videoId} = this.vars.params.comment;
@@ -187,7 +281,8 @@ const YOUTUBE = new Deva({
       return new Promise((resolve, reject) => {
         if (!params) return reject(this.vars.messages.params);
         this.func._insert('commentThreads', params).then(result => {
-          console.log('YOUTUBE DATA', result.data);
+
+          this.vars.params.reply.parentId = result.data.snippet.topLevelComment.id;
           return resolve({
             text,
             html: text,
@@ -195,6 +290,38 @@ const YOUTUBE = new Deva({
           });
         }).catch(err => {
           return this.error(err, text, reject);
+        })
+      });
+    },
+    /**************
+    func: reply
+    params: opts
+    describe: this will post a reply comment to a specific id.
+    ***************/
+    reply(text) {
+      const {part, parentId} = this.vars.params.reply;
+      // build the packet to send to youtube from the data element variables.
+      const params = {
+        part,
+        resource: {
+          snippet: {
+            parentId: parentId,
+            textOriginal: text,
+          }
+        }
+      };
+
+      return new Promise((resolve, reject) => {
+        if (!params) return reject(this.vars.messages.params);
+        if (!parentId) return resolve(this.vars.messages.reply);
+        this.func._insert('comments', params).then(result => {
+          return resolve({
+            text,
+            html: text,
+            data: result.data
+          });
+        }).catch(err => {
+          return this.error(err, opts, reject);
         })
       });
     },
@@ -448,35 +575,17 @@ const YOUTUBE = new Deva({
               video request from the Youtube API.
     ***************/
     comments(packet) {
-      return new Promise((resolve, reject) => {
-        if (!packet) return reject(this.vars.messages.packet);
-        let data = false;
-        this.func.comments(packet).then(result => {
-          data = result.data.items;
-          const text = result.data.items.map(itm => {
-            return [
-              `::begin:comment`,
-              `avatar: ${itm.snippet.topLevelComment.snippet.authorProfileImageUrl}\r`,
-              `::begin:details`,
-              `author: ${itm.snippet.topLevelComment.snippet.authorDisplayName}\r`,
-              `describe: ${itm.snippet.topLevelComment.snippet.textOriginal.replace(/\n|\r/g, ' ')}\r`,
-              `published: ${itm.snippet.topLevelComment.snippet.publishedAt}\r`,
-              `likes: ${itm.snippet.topLevelComment.snippet.likeCount}\r`,
-              `::end:details`,
-              `::end:comment`,
-            ].join('\n');
-          }).join('\n');
-          return this.question(`#feecting parse:${this.agent.key}:comments ${text}`);
-        }).then(parsed => {
-          return resolve({
-            text: parsed.a.text,
-            html: parsed.a.html,
-            data
-          });
-        }).catch(err => {
-          return this.error(err, packet, reject);
-        })
-      });
+      return this.func.comments(packet.q)
+    },
+
+    /**************
+    method:   replies
+    params:   packet
+    describe: Receive a request from the client to show comments for a specific
+              video request from the Youtube API.
+    ***************/
+    replies(packet) {
+      return this.func.replies(packet.q)
     },
 
     /**************
@@ -505,6 +614,30 @@ const YOUTUBE = new Deva({
         return this.func.comment(packet.q.text);
       }
     },
+    /**************
+    method:   reply
+    params:   packet
+    describe: Reply to a specific comment over Youtube API.
+    ***************/
+    reply(packet) {
+      const {params} = packet.q.meta;
+      if (params[1]) this.vars.params.reply.parentId = params[1];
+
+      // if params[2] then set the account to comment from.
+      if (params[2]) {
+        const opts = {
+          key: params[2] || this.vars.acct.key,
+          index: params[3] || this.vars.acct.index,
+        }
+        // if parameters set the account before sending to the function.
+        return this.func.acct(opts).then(acct => {
+          return this.func.reply(packet.q.text);
+        });
+      }
+      else {
+        return this.func.reply(packet.q.text);
+      }
+    },
 
     /**************
     method:   playlist
@@ -528,7 +661,7 @@ const YOUTUBE = new Deva({
               `describe: ${itm.snippet.description.replace(/\n|\r/g, ' ')}`,
               '',
               `cmd[${this.vars.messages.labels.video}]:#youtube video ${itm.snippet.resourceId.videoId}`,
-              `cmd[${this.vars.messages.labels.comments}]:#youtube comments ${itm.snippet.resourceId.videoId}`,
+              `cmd[${this.vars.messages.labels.comments}]:#youtube comments:${itm.snippet.resourceId.videoId}`,
               '::end:video',
             ].join('\n')
           }).join('\n\n');
@@ -620,7 +753,7 @@ const YOUTUBE = new Deva({
               '',
               `cmd[${this.vars.messages.labels.video}]:#youtube video ${itm.id.videoId}`,
               `cmd[${this.vars.messages.labels.channel}]:#youtube channel ${itm.snippet.channelId}`,
-              `cmd[${this.vars.messages.labels.comments}]:#youtube comments ${itm.id.videoId}`,
+              `cmd[${this.vars.messages.labels.comments}]:#youtube comments:${itm.id.videoId}`,
               '::end:video',
             ].join('\n');
           }).join('\n\n');
@@ -669,7 +802,7 @@ const YOUTUBE = new Deva({
               '',
               `cmd[${this.vars.messages.labels.video}]:#youtube video ${itm.id.videoId}`,
               `cmd[${this.vars.messages.labels.channel}]:#youtube channel ${itm.snippet.channelId}`,
-              `cmd[${this.vars.messages.labels.comments}]:#youtube comments ${itm.id.videoId}`,
+              `cmd[${this.vars.messages.labels.comments}]:#youtube comments:${itm.id.videoId}`,
               '::end:video',
             ].join('\n');
           }).join('\n\n');

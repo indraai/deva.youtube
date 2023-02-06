@@ -56,6 +56,7 @@
         "chatreset": "Live Chat Reset",
         "nochat": "There is no active live chat.",
         "livechat": "The live chat has been set.",
+        "reply": "ParentId is not set.",
         "labels": {
           "video": "Video",
           "channel": "Channel",
@@ -119,14 +120,26 @@
 
         "comments": {
           "videoId": false,
-          "part": "id, snippet, replies",
-          "maxResults": 10
+          "part": "id, snippet",
+          "maxResults": 10,
+          "textFormat": "plainText"
+        },
+
+        "replies": {
+          "parentId": false,
+          "part": "id, snippet",
+          "maxResults": 10,
+          "textFormat": "plainText"
         },
 
         "comment": {
           "channelId": false,
           "videoId": false,
-          "part": "id, snippet, replies"
+          "part": "id, snippet"
+        },
+        "reply": {
+          "parentId": false,
+          "part": "id, snippet"
         },
 
         "subscriptions": {
