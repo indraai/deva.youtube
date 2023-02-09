@@ -899,7 +899,7 @@ const YOUTUBE = new Deva({
     ***************/
     video(packet) {
       if (!packet) return Promise.reject(this.vars.messages.packet);
-      return this.func.video(packet.q.text);
+      return this.func.video(packet.q.meta.params[1]);
     },
 
     /**************
