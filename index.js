@@ -262,7 +262,7 @@ const YOUTUBE = new Deva({
     comment(text) {
       const {part, channelId, videoId} = this.vars.params.comment;
       const breaks = text.split(':br:').join('\n'); // convert :br: to line break;
-      const _text = breaks.split(':p:').join('\n\r'); // convert :br: to line break;
+      const _text = breaks.split(':p:').join('\n\n'); // convert :br: to line break;
       // build the packet to send to youtube from the data element variables.
       const params = {
         part,
