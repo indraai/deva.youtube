@@ -23,7 +23,7 @@ const YOUTUBE = new Deva({
       return input.trim();
     },
     parse(input) {
-      return input.trim();
+      return input.trim().split(':br:').join('\n').split(':p:').join('\n\n');
     }
   },
   vars,
@@ -261,8 +261,6 @@ const YOUTUBE = new Deva({
 
     comment(text) {
       const {part, channelId, videoId} = this.vars.params.comment;
-      const breaks = text.split(':br:').join('\n'); // convert :br: to line break;
-      const _text = breaks.split(':p:').join('\n\n'); // convert :br: to line break;
       // build the packet to send to youtube from the data element variables.
       const params = {
         part,
@@ -272,7 +270,7 @@ const YOUTUBE = new Deva({
             videoId,
             topLevelComment: {
               snippet: {
-                textOriginal: _text,
+                textOriginal: this.agent.parse(text),
               }
             }
           }
