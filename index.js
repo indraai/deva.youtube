@@ -429,7 +429,7 @@ const YOUTUBE = new Deva({
             snippet: {
               liveChatId: this.vars.params.liveChatMessages.liveChatId,
               textMessageDetails: {
-                messageText: text,
+                messageText: this.agent.parse(text),
               },
               type: 'textMessageEvent',
             },
