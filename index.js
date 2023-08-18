@@ -1,4 +1,4 @@
-// Copyright (c)2021 Quinn Michaels
+// Copyright (c)2023 Quinn Michaels
 // Youtube Deva
 const fs = require('fs');
 const path = require('path');
@@ -6,19 +6,30 @@ const path = require('path');
 const {google} = require('googleapis');
 const Oauth2 = google.auth.OAuth2;
 
+const package = require('./package.json');
+const info = {
+  id: package.id,
+  name: package.name,
+  describe: package.description,
+  version: package.version,
+  url: package.homepage,
+  dir: __dirname,
+  git: package.repository.url,
+  bugs: package.bugs.url,
+  author: package.author,
+  license: package.license,
+  copyright: package.copyright,
+};
+
 const data_path = path.join(__dirname, 'data.json');
 const {agent,vars} = require(data_path).data;
 
 const Deva = require('@indra.ai/deva');
 const YOUTUBE = new Deva({
-  agent: {
-    uid: agent.uid,
-    key: agent.key,
-    name: agent.name,
-    describe: agent.describe,
-    prompt: agent.prompt,
-    voice: agent.voice,
-    profile: agent.profile,
+  info,
+  agent,
+  vars,
+  utils: {
     translate(input) {
       return input.trim();
     },
@@ -26,7 +37,6 @@ const YOUTUBE = new Deva({
       return input.trim().split(':br:').join('\n').split(':p:').join('\n\n');
     }
   },
-  vars,
   listeners: {},
   modules: {
     oAuth: false,
@@ -34,7 +44,6 @@ const YOUTUBE = new Deva({
   },
   deva: {},
   func: {
-
     _insert(func, params) {
       return new Promise((resolve, reject) => {
         const {key, index} = this.vars.acct;
@@ -68,7 +77,8 @@ const YOUTUBE = new Deva({
         if (this.vars.acct.key === opts.key) return resolve({text:this.vars.messages.acct});
         try {
           opts.index = opts.index || this.vars.acct.index; //temp storage for later.
-          const acct = this.client.services.youtube[opts.key][opts.index];
+          const {personal} = this.security();
+          const acct = personal[opts.key][opts.index];
           if (!acct) return resolve({text:this.vars.messages.accounterr});
           this.vars.acct.key = opts.key;
           this.vars.acct.index = opts.index;
@@ -500,43 +510,19 @@ const YOUTUBE = new Deva({
 
     },
 
-    onStartLoad() {
-      return new Promise((resolve, reject) => {
-        const { channel, subscriptions, playlist } = this.func;
-        // let's get our channel
-        channel().then(ch => {
-          this.agent.youtube = ch; // store in me for transport later
-          this.vars.store.channel = ch;
-          return subscriptions();
-        }).then(subscr => {
-          this.vars.store.subscriptions = subscr;
-          return playlist({
-            playlistId: this.vars.store.channel.contentDetails.relatedPlaylists.uploads,
-            maxResults: this.vars.params.playlist.maxResuls,
-            part: this.vars.params.playlist.part,
-          });
-        }).then(uploads => {
-          this.vars.store.uploads = uploads;
-          return resolve(true);
-        }).catch(err => {
-          return this.error(err, false, reject);
-        });
-      });
-    },
-
     setAuth() {
       return new Promise((resolve, reject) => {
-        if (!this.client.services.youtube) return resolve('NO SERVICE');
+        const {personal} = this.security();
+        if (!personal) return resolve('NO SERVICE');
         try {
-          const auth = this.client.services.youtube;
-          const accts = Object.keys(auth);
+          const accts = Object.keys(personal);
           accts.forEach(a => {
-            const acct = auth[a];
+            const acct = personal[a];
 
-            this.prompt(`Auth ${a}`);
+            this.prompt(`auth: ${a}`);
+            this.modules[a] = []; // set the account into a module
 
-            this.modules[a] = [];
-            const authlen = auth[a].length
+            const authlen = auth[a].length;
             for (let x = 0; x < authlen; x++) {
               this.modules[a][x] = {};
               const {secret, token} = auth[a][x];
@@ -1015,10 +1001,7 @@ const YOUTUBE = new Deva({
   },
 
   onInit() {
-    if (this.client.services.youtube) this.func.setAuth().then(auth => {
-      return this.func.onStartLoad(auth);
-    }).then(started => {
-      this.prompt(this.vars.messages.init);
+    this.func.setAuth().then(auth => {
       return this.start();
     }).catch(err => {
       return this.error(err);
