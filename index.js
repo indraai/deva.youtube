@@ -45,11 +45,12 @@ const YOUTUBE = new Deva({
   deva: {},
   func: {
     _insert(func, params) {
+      console.log(`- Live Chat Message`);
+      this.context('insert');
       return new Promise((resolve, reject) => {
         const {key, index} = this.vars.acct;
         this.modules[key][index].yt[func].insert(params, (err, response) => {
-          if (err) return this.error(err, {func,params}, reject);
-          this.vars.acct.index = index ? 0 : 1;
+          if (err) return reject(err);
           return resolve(response);
         })
       });
@@ -106,10 +107,10 @@ const YOUTUBE = new Deva({
               `published: ${itm.snippet.publishedAt}`,
               `describe: ${itm.snippet.description.replace(/\n|\r/g, ' ')}`,
               '::begin:buttons',
-              `cmd[${labels.like}]:#youtube rate:${itm.id} like`,
-              `cmd[${labels.comments}]:#youtube comments:${itm.id}`,
-              `tty[${labels.comment}]:#youtube comment:${itm.snippet.channelId}:${itm.id} `,
-              isLive ? `cmd[${labels.livechat}]:#youtube chatid:${itm.liveStreamingDetails.activeLiveChatId}` : '',
+              `button[${labels.like}]:#youtube rate:${itm.id} like`,
+              `button[${labels.comments}]:#youtube comments:${itm.id}`,
+              `button[${labels.comment}]:#youtube comment:${itm.snippet.channelId}:${itm.id} `,
+              isLive ? `button[${labels.livechat}]:#youtube chatid:${itm.liveStreamingDetails.activeLiveChatId}` : '',
               '::end:buttons',
             ].join('\n');
           }).join('\n');
@@ -331,7 +332,7 @@ const YOUTUBE = new Deva({
           });
         }).catch(err => {
           return this.error(err, opts, reject);
-        })
+        });
       });
     },
 
@@ -424,6 +425,7 @@ const YOUTUBE = new Deva({
     },
 
     liveChat(text) {
+      this.context('livechat');
       return new Promise((resolve, reject) => {
         let data = {};
         if (!this.vars.params.liveChatMessages.liveChatId) return resolve({text:false})
@@ -445,23 +447,14 @@ const YOUTUBE = new Deva({
             },
           }
         }).then(message => {
+          this.prompt('after insert');
           data = message.data;
-
-          this.talk(`${this.agent.key}:chat`, {
-            id:this.uid(),
-            agent: this.agent,
-            data: {
-              key: this.vars.acct.key,
-              text,
-            },
-            created: Date.now(),
-          });
-
           const html = [
             '::begin:chat',
             text,
             '::end:chat',
           ].join('\n');
+          this.context('feecting');
           return this.question(`#feecting parse:${this.agent.key}:chat ${text}`);
         }).then(parsed => {
 
@@ -519,13 +512,12 @@ const YOUTUBE = new Deva({
           accts.forEach(a => {
             const acct = personal[a];
 
-            this.prompt(`auth: ${a}`);
+            this.prompt(a);
             this.modules[a] = []; // set the account into a module
-
-            const authlen = auth[a].length;
+            const authlen = acct.length;
             for (let x = 0; x < authlen; x++) {
               this.modules[a][x] = {};
-              const {secret, token} = auth[a][x];
+              const {secret, token} = acct[x];
               this.modules[a][x].oAuth = new Oauth2(
                 secret.installed.client_id,
                 secret.installed.client_secret,
@@ -560,6 +552,7 @@ const YOUTUBE = new Deva({
               video request from the Youtube API.
     ***************/
     comments(packet) {
+      this.context('comments');
       return this.func.comments(packet.q)
     },
 
@@ -570,6 +563,7 @@ const YOUTUBE = new Deva({
               video request from the Youtube API.
     ***************/
     replies(packet) {
+      this.context('replies');
       return this.func.replies(packet.q)
     },
 
@@ -580,6 +574,7 @@ const YOUTUBE = new Deva({
               Youtube API for a specific video.
     ***************/
     comment(packet) {
+      this.context('comment');
       const {params} = packet.q.meta;
       if (params[1]) this.vars.params.comment.channelId = params[1];
       if (params[2]) this.vars.params.comment.videoId = params[2];
@@ -605,6 +600,7 @@ const YOUTUBE = new Deva({
     describe: Reply to a specific comment over Youtube API.
     ***************/
     reply(packet) {
+      this.context('reply');
       const {params} = packet.q.meta;
       if (params[1]) this.vars.params.reply.parentId = params[1];
 
@@ -631,6 +627,7 @@ const YOUTUBE = new Deva({
               video information from the Youtube API.
     ***************/
     playlist(packet) {
+      this.context('playlist');
       let data = false;
       return new Promise((resolve, reject) => {
         if (!packet) return reject(this.vars.messages.packet);
@@ -670,6 +667,7 @@ const YOUTUBE = new Deva({
               from the Youtube API.
     ***************/
     channel(packet) {
+      this.context('channel');
       return new Promise((resolve, reject) => {
         if (!packet) return reject(this.vars.messages.packet)
         let data = false;
@@ -711,6 +709,7 @@ const YOUTUBE = new Deva({
               to return search results from the Youtube API.
     ***************/
     search(packet) {
+      this.context('search');
       // #youtubesearch max:order:
       return new Promise((resolve, reject) => {
         if (!packet) return reject(this.vars.messages.packet)
@@ -726,7 +725,8 @@ const YOUTUBE = new Deva({
           relevanceLanguage: packet.q.meta.params[6] || this.vars.params.search.lang
         }).then(result => {
           data = result.items;
-          const text = result.items.map(itm => {
+          let text = "NO RESULTS";
+          if (data.length) text = result.items.map(itm => {
             return [
               '::begin:video',
               `youtube:${itm.id.videoId}`,
@@ -736,9 +736,9 @@ const YOUTUBE = new Deva({
               `published: ${itm.snippet.publishedAt}`,
               `channel: ${itm.snippet.channelTitle}`,
               '',
-              `cmd[${this.vars.messages.labels.video}]:#youtube video ${itm.id.videoId}`,
-              `cmd[${this.vars.messages.labels.channel}]:#youtube channel ${itm.snippet.channelId}`,
-              `cmd[${this.vars.messages.labels.comments}]:#youtube comments:${itm.id.videoId}`,
+              `button[${this.vars.messages.labels.video}]:#youtube video ${itm.id.videoId}`,
+              `button[${this.vars.messages.labels.channel}]:#youtube channel ${itm.snippet.channelId}`,
+              `button[${this.vars.messages.labels.comments}]:#youtube comments:${itm.id.videoId}`,
               '::end:video',
             ].join('\n');
           }).join('\n\n');
@@ -761,6 +761,7 @@ const YOUTUBE = new Deva({
     describe: Receive a packet with a text value to search Youtube streams
     ***************/
     streams(packet) {
+      this.context('streams');
       return new Promise((resolve, reject) => {
         let data = false;
 
@@ -805,7 +806,9 @@ const YOUTUBE = new Deva({
       });
     },
 
+
     stream(packet) {
+      this.context('stream');
       return this.func.liveBroadcast(packet.q.meta.params[1])
     },
 
@@ -815,6 +818,7 @@ const YOUTUBE = new Deva({
     describe: Get the messages for a live stream and return them to the client.
     ***************/
     messages(packet) {
+      this.context('messages');
       return this.func.liveChatMessages(packet);
     },
 
@@ -825,12 +829,13 @@ const YOUTUBE = new Deva({
               live stream chats will be sent to.
     ***************/
     chatid(packet) {
+      this.context('chatid');
       if (packet.q.meta.params[1] === 'reset') {
         this.vars.params.liveChatMessages.liveChatId = false;
         return Promise.resolve({text:this.vars.messages.chatreset});
       }
       this.vars.params.liveChatMessages.liveChatId = packet.q.meta.params[1] || this.vars.params.liveChatMessages.liveChatId;
-      return Promise.resolve({text:this.vars.messages.livechatid});
+      return Promise.resolve({text:this.vars.messages.livechat});
     },
 
     /**************
@@ -843,22 +848,26 @@ const YOUTUBE = new Deva({
               is necessary before sending a liveChat
     ***************/
     chat(packet) {
+      this.context('chat');
       const {liveChatId} = this.vars.params.liveChatMessages;
+
       if (!liveChatId) return Promise.resolve({text:false});
 
       const {params} = packet.q.meta;
 
-      if (params.length) {
+      if (params.length > 1) {
         const opts = {
           key: params[1] || this.vars.acct.key,
           index: params[2] || this.vars.acct.index,
         }
         // if parameters set the account before sending to the function.
         return this.func.acct(opts).then(acct => {
+          this.prompt('live chat with acct');
           return this.func.liveChat(packet.q.text);
         });
       }
       else {
+        this.prompt('live chat without acct');
         return this.func.liveChat(packet.q.text);
       }
     },
@@ -869,9 +878,9 @@ const YOUTUBE = new Deva({
     describe: retrieves a list of chat messages from youtube.
     ***************/
     chats(packet) {
+      this.context('chats');
       const {liveChatId} = this.vars.params.liveChatMessages;
       if (!liveChatId) return Promise.resolve({text:false});
-
       return this.func.liveChatMessages(packet);
     },
 
@@ -883,6 +892,7 @@ const YOUTUBE = new Deva({
               videos function to retrieve data from the Youtube api.
     ***************/
     video(packet) {
+      this.context('video');
       if (!packet) return Promise.reject(this.vars.messages.packet);
       return this.func.video(packet.q.meta.params[1]);
     },
@@ -894,6 +904,7 @@ const YOUTUBE = new Deva({
               call the subscription function to get results from the youtube api.
     ***************/
     subs(packet) {
+      this.context('subs');
       const {params} = packet.q.meta;
       let data = {};
       if (params[1]) {
@@ -936,30 +947,13 @@ const YOUTUBE = new Deva({
     },
 
     /**************
-    method:   uid
-    params:   none
-    describe: geneate a uid and deliver it back to the client.
-    ***************/
-    uid() {
-      return Promise.resolve(this.uid());
-    },
-
-    /**************
-    method:   status
-    params:   none
-    describe: return the status of the current agent/deva to the client
-    ***************/
-    status() {
-      return this.status();
-    },
-
-    /**************
     method:   acct
     params:   packet params
     describe: Receive a packet from the client with parameters to set the
               necessary account to use when communicating with the Youtube api.
     ***************/
     acct(packet) {
+      this.context('acct');
       const {params} = packet.q.meta;
       const key = params[1] || this.vars.acct.key;
       const index = params[2] || this.vars.acct.index;
@@ -974,37 +968,26 @@ const YOUTUBE = new Deva({
               the Youtube api.
     ***************/
     rate(packet) {
+      this.context('rate');
       return this.func.rate(packet.q);
     },
-
-    help(packet) {
-      return new Promise((resolve, reject) => {
-        this.lib.help(packet.q.text, __dirname).then(text => {
-          return resolve({text})
-        }).catch(err => {
-          return this.error(err, packet, reject);
-        });
-      });
-    }
   },
 
   onError(err, packet, reject=false) {
     console.error(err);
-    if (err.response.data.error) {
-      const {error} = err.response.data;
-      const quota = error.errors.find(e => e.reason === this.vars.errors.quota) ? true : false;
-      if (quota) {
-        console.error('QUOTA LIMIT REACHED');
-      }
-    }
+    // if (err.response.data.error) {
+    //   const {error} = err.response.data;
+    //   const quota = error.errors.find(e => e.reason === this.vars.errors.quota) ? true : false;
+    //   if (quota) {
+    //     console.error('QUOTA LIMIT REACHED');
+    //   }
+    // }
     return reject ? reject(err) : false;
   },
 
-  onInit() {
-    this.func.setAuth().then(auth => {
-      return this.start();
-    }).catch(err => {
-      return this.error(err);
+  onDone() {
+    this.func.setAuth().catch(err => {
+      this.error(err);
     });
   },
 });
