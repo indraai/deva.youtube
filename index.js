@@ -44,8 +44,8 @@ const YOUTUBE = new Deva({
   },
   deva: {},
   func: {
-    _insert(func, params) {
-      console.log(`- Live Chat Message`);
+    insert(func, params) {
+      this.prompt('inside func insert');
       this.context('insert');
       return new Promise((resolve, reject) => {
         const {key, index} = this.vars.acct;
@@ -290,7 +290,7 @@ const YOUTUBE = new Deva({
 
       return new Promise((resolve, reject) => {
         if (!params) return reject(this.vars.messages.params);
-        this.func._insert('commentThreads', params).then(result => {
+        this.func.insert('commentThreads', params).then(result => {
 
           this.vars.params.reply.parentId = result.data.snippet.topLevelComment.id;
           return resolve({
@@ -324,7 +324,7 @@ const YOUTUBE = new Deva({
       return new Promise((resolve, reject) => {
         if (!params) return reject(this.vars.messages.params);
         if (!parentId) return resolve(this.vars.messages.reply);
-        this.func._insert('comments', params).then(result => {
+        this.func.insert('comments', params).then(result => {
           return resolve({
             text,
             html: text,
@@ -428,9 +428,9 @@ const YOUTUBE = new Deva({
       this.context('livechat');
       return new Promise((resolve, reject) => {
         let data = {};
-        if (!this.vars.params.liveChatMessages.liveChatId) return resolve({text:false})
-
-        this.func._insert('liveChatMessages', {
+        if (!this.vars.params.liveChatMessages.liveChatId) return resolve({text:false});
+        this.prompt('goto func insert');
+        this.func.insert('liveChatMessages', {
           part: 'snippet',
           properties: {
             'snippet.liveChatId': this.vars.params.liveChatMessages.liveChatId,
@@ -447,7 +447,6 @@ const YOUTUBE = new Deva({
             },
           }
         }).then(message => {
-          this.prompt('after insert');
           data = message.data;
           const html = [
             '::begin:chat',
@@ -464,6 +463,7 @@ const YOUTUBE = new Deva({
             data,
           });
         }).catch(err => {
+          console.log('ERROR', err);
           return this.error(err, false, reject);
         });
       });
