@@ -1,6 +1,6 @@
 {
   "name": "@indra.ai/youtubedeva",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "description": "The Youtube Deva",
   "main": "index.js",
   "scripts": {
