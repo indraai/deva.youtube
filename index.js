@@ -92,10 +92,12 @@ const YOUTUBE = new Deva({
     },
 
     video(id) {
+      this.context('video');
       let data = {};
       const {labels} = this.vars.messages;
       return new Promise((resolve, reject) => {
         if (!id) return reject(this.vars.messages.params);
+
         this.func._list('videos', {id, part: this.vars.params.video.part}).then(videos => {
 
           data = videos.data.items;
@@ -114,7 +116,7 @@ const YOUTUBE = new Deva({
               '::end:buttons',
             ].join('\n');
           }).join('\n');
-          return this.question(`#feecting parse:${this.agent.key}:video ${text}`);
+          return this.question(`#feecting parse:${this.agent().key}:video ${text}`);
         }).then(parsed => {
           return resolve({
             text: parsed.a.text,
@@ -212,7 +214,7 @@ const YOUTUBE = new Deva({
             ].join('\n');
           }).join('\n');
 
-          return this.question(`#feecting parse:${this.agent.key}:comments ${text}`);
+          return this.question(`#feecting parse:${this.agent().key}:comments ${text}`);
         }).then(parsed => {
           return resolve({
             text: parsed.a.text,
@@ -256,7 +258,7 @@ const YOUTUBE = new Deva({
             ].join('\n');
           }).join('\n');
 
-          return this.question(`#feecting parse:${this.agent.key}:replies ${text}`);
+          return this.question(`#feecting parse:${this.agent().key}:replies ${text}`);
         }).then(parsed => {
           return resolve({
             text: parsed.a.text,
@@ -281,7 +283,7 @@ const YOUTUBE = new Deva({
             videoId,
             topLevelComment: {
               snippet: {
-                textOriginal: this.agent.parse(text),
+                textOriginal: this.utils.parse(text),
               }
             }
           }
@@ -429,7 +431,6 @@ const YOUTUBE = new Deva({
       return new Promise((resolve, reject) => {
         let data = {};
         if (!this.vars.params.liveChatMessages.liveChatId) return resolve({text:false});
-        this.prompt('goto func insert');
         this.func.insert('liveChatMessages', {
           part: 'snippet',
           properties: {
@@ -441,7 +442,7 @@ const YOUTUBE = new Deva({
             snippet: {
               liveChatId: this.vars.params.liveChatMessages.liveChatId,
               textMessageDetails: {
-                messageText: this.agent.parse(text),
+                messageText: this.utils.parse(text),
               },
               type: 'textMessageEvent',
             },
@@ -454,7 +455,7 @@ const YOUTUBE = new Deva({
             '::end:chat',
           ].join('\n');
           this.context('feecting');
-          return this.question(`#feecting parse:${this.agent.key}:chat ${text}`);
+          return this.question(`#feecting parse:${this.agent().key}:chat ${text}`);
         }).then(parsed => {
 
           return resolve({
@@ -647,7 +648,7 @@ const YOUTUBE = new Deva({
               '::end:video',
             ].join('\n')
           }).join('\n\n');
-          return this.question(`#feecting parse:${this.agent.key}:playlist ${text}`);
+          return this.question(`#feecting parse:${this.agent().key}:playlist ${text}`);
         }).then(parsed => {
           return resolve({
             text: parsed.a.text,
@@ -689,7 +690,7 @@ const YOUTUBE = new Deva({
             '::end:details',
             '::end:channel',
           ].join('\n\n');
-          return this.question(`#feecting parse:${this.agent.key}:channel ${text}`);
+          return this.question(`#feecting parse:${this.agent().key}:channel ${text}`);
         }).then(parsed => {
           return resolve({
             text: parsed.a.text,
@@ -742,7 +743,7 @@ const YOUTUBE = new Deva({
               '::end:video',
             ].join('\n');
           }).join('\n\n');
-          return this.question(`#feecting parse:${this.agent.key}:search ${text}`);
+          return this.question(`#feecting parse:${this.agent().key}:search ${text}`);
         }).then(parsed => {
           return resolve({
             text: parsed.a.text,
@@ -792,7 +793,7 @@ const YOUTUBE = new Deva({
               '::end:video',
             ].join('\n');
           }).join('\n\n');
-          return this.question(`#feecting parse:${this.agent.key}:streams ${text}`);
+          return this.question(`#feecting parse:${this.agent().key}:streams ${text}`);
         }).then(parsed => {
           return resolve({
             text: parsed.a.text,
@@ -851,6 +852,8 @@ const YOUTUBE = new Deva({
       this.context('chat');
       const {liveChatId} = this.vars.params.liveChatMessages;
 
+      this.prompt(liveChatId);
+
       if (!liveChatId) return Promise.resolve({text:false});
 
       const {params} = packet.q.meta;
@@ -892,9 +895,10 @@ const YOUTUBE = new Deva({
               videos function to retrieve data from the Youtube api.
     ***************/
     video(packet) {
-      this.context('video');
+      this.state('get');
       if (!packet) return Promise.reject(this.vars.messages.packet);
-      return this.func.video(packet.q.meta.params[1]);
+      this.action('func');
+      return this.func.video(packet.q.text);
     },
 
     /**************
@@ -933,7 +937,7 @@ const YOUTUBE = new Deva({
               '::end:channel',
             ].join('\n');
           }).join('\n\n');
-          return this.question(`#feecting parse:${this.agent.key}:subs ${text}`);
+          return this.question(`#feecting parse:${this.agent().key}:subs ${text}`);
         }).then(parsed => {
           return resolve({
             text: parsed.a.text,
