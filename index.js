@@ -449,18 +449,12 @@ const YOUTUBE = new Deva({
           }
         }).then(message => {
           data = message.data;
-          const html = [
-            '::begin:chat',
-            text,
-            '::end:chat',
-          ].join('\n');
-          this.context('feecting');
-          return this.question(`#feecting parse:${this.agent().key}:chat ${text}`);
-        }).then(parsed => {
+
+          console.log(data);
 
           return resolve({
-            text: parsed.a.text,
-            html: parsed.a.html,
+            text: text,
+            html: text,
             data,
           });
         }).catch(err => {
