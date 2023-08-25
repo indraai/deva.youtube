@@ -449,9 +449,6 @@ const YOUTUBE = new Deva({
           }
         }).then(message => {
           data = message.data;
-
-          console.log(data);
-
           return resolve({
             text: text,
             html: text,
@@ -983,10 +980,11 @@ const YOUTUBE = new Deva({
     return reject ? reject(err) : false;
   },
 
-  onDone() {
+  onDone(data) {
     this.func.setAuth().catch(err => {
       this.error(err);
     });
+    return Promise.resolve(data);
   },
 });
 module.exports = YOUTUBE

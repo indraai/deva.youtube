@@ -5,6 +5,7 @@
   "data": {
     "agent": {
       "id": "5198394503326",
+      "key": "youtube",
       "prompt": {
         "emoji": "🍿",
         "text": "youtube",
@@ -22,7 +23,6 @@
         }
       },
       "profile": {
-        "key": "youtube",
         "name": "YouTube Deva",
         "describe": "YouTube Deva Buddy",
         "emoji": "/public/devas/youtube/emoji.png",
