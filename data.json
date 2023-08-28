@@ -94,6 +94,7 @@
         "insert": "Insert function",
         "error": "Error talking"
       },
+      "chats": false,
       "active": false,
       "scopes": [
         "https://www.googleapis.com/auth/youtube",
@@ -187,8 +188,8 @@
 
         "liveChatMessages": {
           "liveChatId": false,
-          "maxResults": 200,
-          "part": "id,snippet"
+          "maxResults": 25,
+          "part": "id,snippet,authorDetails"
         },
 
         "rate": {

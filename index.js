@@ -45,7 +45,6 @@ const YOUTUBE = new Deva({
   deva: {},
   func: {
     insert(func, params) {
-      this.prompt('inside func insert');
       this.context('insert');
       return new Promise((resolve, reject) => {
         const {key, index} = this.vars.acct;
@@ -201,7 +200,6 @@ const YOUTUBE = new Deva({
               `::begin:text`,
               `${textOriginal}`,
               `::end:text`,
-              `\n-\n`,
               `author: ${authorDisplayName}`,
               `date: ${publishedAt}`,
               `likes: ${likeCount}`,
@@ -472,17 +470,19 @@ const YOUTUBE = new Deva({
         this.vars.params.liveChatMessages.maxResuls = packet.q.meta.params[2] || this.vars.params.liveChatMessages.maxResults;
 
         if (packet.q.meta.params[3]) this.vars.params.liveChatMessages.pageToken = packet.q.meta.params[3];
-
+        this.state('get');
         this.func._list('liveChatMessages', this.vars.params.liveChatMessages).then(messages => {
+
+          const items = messages.data.items.map(item => {
+            return `${item.authorDetails.displayName}: ${item.snippet.displayMessage}`;
+          });
           this.vars.params.liveChatMessages.pageToken = messages.data.nextPageToken;
+          this.state('return');
           return resolve({
-            text: 'data',
-            html: 'data',
+            items,
             data: messages.data
           })
-        }).catch(err => {
-          return this.error(err, packet, reject);
-        })
+        }).catch(reject)
       });
     },
 
@@ -570,21 +570,8 @@ const YOUTUBE = new Deva({
       const {params} = packet.q.meta;
       if (params[1]) this.vars.params.comment.channelId = params[1];
       if (params[2]) this.vars.params.comment.videoId = params[2];
-
-      // if params[3] then set the account to comment from.
-      if (params[3]) {
-        const opts = {
-          key: params[3] || this.vars.acct.key,
-          index: params[4] || this.vars.acct.index,
-        }
-        // if parameters set the account before sending to the function.
-        return this.func.acct(opts).then(acct => {
-          return this.func.comment(packet.q.text);
-        });
-      }
-      else {
-        return this.func.comment(packet.q.text);
-      }
+      if (!packet.q.text) return Promise.resolve(this._messages.notext)
+      return this.func.comment(packet.q.text);
     },
     /**************
     method:   reply
@@ -843,8 +830,6 @@ const YOUTUBE = new Deva({
       this.context('chat');
       const {liveChatId} = this.vars.params.liveChatMessages;
 
-      this.prompt(liveChatId);
-
       if (!liveChatId) return Promise.resolve({text:false});
 
       const {params} = packet.q.meta;
@@ -856,12 +841,10 @@ const YOUTUBE = new Deva({
         }
         // if parameters set the account before sending to the function.
         return this.func.acct(opts).then(acct => {
-          this.prompt('live chat with acct');
           return this.func.liveChat(packet.q.text);
         });
       }
       else {
-        this.prompt('live chat without acct');
         return this.func.liveChat(packet.q.text);
       }
     },
@@ -874,8 +857,20 @@ const YOUTUBE = new Deva({
     chats(packet) {
       this.context('chats');
       const {liveChatId} = this.vars.params.liveChatMessages;
-      if (!liveChatId) return Promise.resolve({text:false});
-      return this.func.liveChatMessages(packet);
+      return new Promise((resolve, reject) => {
+        if (!liveChatId) return resolve({text:false});
+        this.state('data');
+        this.func.liveChatMessages(packet).then(messages => {
+          this.state('resolve');
+          return resolve({
+            text: messages.items.join('\n'),
+            html: messages.items.join('<br/>'),
+            data: messages.data,
+          });
+        }).catch(err => {
+          return this.error(packet, err, reject);
+        })
+      });
     },
 
     /**************
