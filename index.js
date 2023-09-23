@@ -963,18 +963,6 @@ const YOUTUBE = new Deva({
     },
   },
 
-  onError(err, packet, reject=false) {
-    console.error(err);
-    // if (err.response.data.error) {
-    //   const {error} = err.response.data;
-    //   const quota = error.errors.find(e => e.reason === this.vars.errors.quota) ? true : false;
-    //   if (quota) {
-    //     console.error('QUOTA LIMIT REACHED');
-    //   }
-    // }
-    return reject ? reject(err) : false;
-  },
-
   onDone(data) {
     this.func.setAuth().catch(err => {
       this.error(err);
