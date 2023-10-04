@@ -45,7 +45,7 @@ const YOUTUBE = new Deva({
   deva: {},
   func: {
     insert(func, params) {
-      this.context('insert');
+      this.action('insert');
       return new Promise((resolve, reject) => {
         const {key, index} = this.vars.acct;
         this.modules[key][index].yt[func].insert(params, (err, response) => {
@@ -56,6 +56,7 @@ const YOUTUBE = new Deva({
     },
 
     _list(func,params) {
+      this.action('list');
       return new Promise((resolve, reject) => {
         const {key, index} = this.vars.acct;
         this.modules[key][index].yt[func].list(params, (err, response) => {
@@ -72,6 +73,7 @@ const YOUTUBE = new Deva({
     describe: This will switch youtube accounts from one that is already in the list.
     ***************/
     acct(opts) {
+      this.action('view');
       return new Promise((resolve, reject) => {
         // if the accounts are the same then return the message
         if (this.vars.acct.key === opts.key) return resolve({text:this.vars.messages.acct});
@@ -91,7 +93,7 @@ const YOUTUBE = new Deva({
     },
 
     video(id) {
-      this.context('video');
+      this.action('view');
       let data = {};
       const {labels} = this.vars.messages;
       return new Promise((resolve, reject) => {
@@ -161,6 +163,7 @@ const YOUTUBE = new Deva({
       // - videoSyndicated (any|true)
       // - videoType (any|episode|movie) if used set type to "video"
       return new Promise((resolve, reject) => {
+        this.action('find');
         if (!params) return reject(this.vars.messages.params);
         this.func._list('search', params).then(result => {
           return resolve(result.data)
@@ -172,6 +175,7 @@ const YOUTUBE = new Deva({
 
     // get comments for a video
     comments(opts) {
+      this.action('list');
       return new Promise((resolve, reject) => {
         let data;
         if (opts.meta.params[1]) this.vars.params.comments.videoId = opts.meta.params[1];
@@ -180,8 +184,6 @@ const YOUTUBE = new Deva({
 
         this.func._list('commentThreads', this.vars.params.comments).then(result => {
           data = result.data;
-
-          console.log('YOUTUBE COMMENTS', JSON.stringify(result.data, false, 2));
 
           const text = result.data.items.map(itm => {
             const {topLevelComment, canReply, totalReplyCount} = itm.snippet;
@@ -271,6 +273,7 @@ const YOUTUBE = new Deva({
 
 
     comment(text) {
+      this.action('view');
       const {part, channelId, videoId} = this.vars.params.comment;
       // build the packet to send to youtube from the data element variables.
       const params = {
@@ -309,6 +312,7 @@ const YOUTUBE = new Deva({
     describe: this will post a reply comment to a specific id.
     ***************/
     reply(text) {
+      this.action('reply')
       const {part, parentId} = this.vars.params.reply;
       // build the packet to send to youtube from the data element variables.
       const params = {
@@ -337,6 +341,7 @@ const YOUTUBE = new Deva({
     },
 
     rate(opts) {
+      this.action('view');
       const {text, meta} = opts;
       // build the packet to send to youtube from the data element variables.
       return new Promise((resolve, reject) => {
@@ -354,6 +359,7 @@ const YOUTUBE = new Deva({
     },
 
     channel(channelId) {
+      this.context('view');
       this.vars.params.channel = {
         mine: true,
         part: this.vars.params.channel.part,
@@ -374,6 +380,7 @@ const YOUTUBE = new Deva({
     },
 
     playlist(params) {
+      this.action('view');
       return new Promise((resolve, reject) => {
         if (!params.playlistId) return reject(this.vars.messages.params);
         this.func._list('playlistItems', params).then(pl => {
@@ -392,6 +399,7 @@ const YOUTUBE = new Deva({
               properties.
     ***************/
     subscriptions() {
+      this.action('list');
       let params = {
         mine: true,
         part: this.vars.params.subscriptions.part,
@@ -413,6 +421,7 @@ const YOUTUBE = new Deva({
     },
 
     liveBroadcast(id=false) {
+      this.action('view');
       return new Promise((resolve, reject) => {
         this.func._list('live', {
           id,
@@ -425,7 +434,7 @@ const YOUTUBE = new Deva({
     },
 
     liveChat(text) {
-      this.context('livechat');
+      this.action('insert');
       return new Promise((resolve, reject) => {
         let data = {};
         if (!this.vars.params.liveChatMessages.liveChatId) return resolve({text:false});
@@ -465,6 +474,7 @@ const YOUTUBE = new Deva({
     describe: Return packet messages for a livechat id.
     ***************/
     liveChatMessages(packet) {
+      this.action('list');
       return new Promise((resolve, reject) => {
         this.vars.params.liveChatMessages.liveChatId = packet.q.meta.params[1] || this.vars.params.liveChatMessages.liveChatId;
         this.vars.params.liveChatMessages.maxResuls = packet.q.meta.params[2] || this.vars.params.liveChatMessages.maxResults;
@@ -496,6 +506,7 @@ const YOUTUBE = new Deva({
     },
 
     setAuth() {
+      this.action('set');
       return new Promise((resolve, reject) => {
         const {personal} = this.security();
         if (!personal) return resolve('NO SERVICE');
@@ -530,10 +541,6 @@ const YOUTUBE = new Deva({
           return resolve(this.vars.messages.auth);
         }
       });
-    },
-
-    help(text) {
-      return this.lib.help(text, __dirname);
     },
   },
   methods: {

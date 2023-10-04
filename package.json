@@ -20,7 +20,7 @@
     "url": "https://github.com/indraai/YoutubeDeva/issues"
   },
   "dependencies": {
-    "@indra.ai/deva": "^1.2.8",
+    "@indra.ai/deva": "^1.2.15",
     "googleapis": "^87.0.0"
   },
   "homepage": "https://github.com/indraai/YoutubeDeva#readme"
