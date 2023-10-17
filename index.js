@@ -434,7 +434,7 @@ const YOUTUBE = new Deva({
     },
 
     liveChat(text) {
-      this.action('insert');
+      this.action('func');
       return new Promise((resolve, reject) => {
         let data = {};
         if (!this.vars.params.liveChatMessages.liveChatId) return resolve({text:false});
@@ -480,6 +480,8 @@ const YOUTUBE = new Deva({
         this.vars.params.liveChatMessages.maxResuls = packet.q.meta.params[2] || this.vars.params.liveChatMessages.maxResults;
 
         if (packet.q.meta.params[3]) this.vars.params.liveChatMessages.pageToken = packet.q.meta.params[3];
+        if (packet.q.data.pageToken) this.vars.params.liveChatMessages.pageToken = packet.q.data.pageToken;
+
         this.state('get');
         this.func._list('liveChatMessages', this.vars.params.liveChatMessages).then(messages => {
 
