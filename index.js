@@ -516,8 +516,6 @@ const YOUTUBE = new Deva({
           const accts = Object.keys(personal);
           accts.forEach(a => {
             const acct = personal[a];
-
-            this.prompt(a);
             this.modules[a] = []; // set the account into a module
             const authlen = acct.length;
             for (let x = 0; x < authlen; x++) {
