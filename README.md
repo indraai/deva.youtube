@@ -2,6 +2,6 @@
 
 The Youtube Deva
 
-`npm i @indra.ai/youtubedeva --save-dev`
+`npm i @indra.ai/deva.youtube --save-dev`
 
-`const youtube = require('@indra.ai/youtubedeva')`;
+`const youtube = require('@indra.ai/deva.youtube')`;

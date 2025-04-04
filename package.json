@@ -1,14 +1,15 @@
 {
-  "name": "@indra.ai/youtubedeva",
+  "name": "@indra.ai/deva.youtube",
   "version": "0.0.31",
   "description": "The Youtube Deva",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/indraai/YoutubeDeva.git"
+    "url": "git+ssh://git@github.com/indraai/deva.youtube.git"
   },
   "keywords": [
     "Youtube",
@@ -16,12 +17,200 @@
   ],
   "author": "Quinn Michaels",
   "license": "MIT",
+  "copyright": "(c)2025 Quinn Michaels; All rights reserved.",
   "bugs": {
-    "url": "https://github.com/indraai/YoutubeDeva/issues"
+    "url": "https://github.com/indraai/deva.youtube/issues"
   },
   "dependencies": {
     "@indra.ai/deva": "^1.2.18",
-    "googleapis": "^87.0.0"
+    "googleapis": "^148.0.0"
   },
-  "homepage": "https://github.com/indraai/YoutubeDeva#readme"
+  "homepage": "https://github.com/indraai/deva.youtube#readme",
+  "data": {
+    "agent": {
+      "id": "5198394503326",
+      "key": "youtube",
+      "prompt": {
+        "emoji": "🍿",
+        "text": "youtube",
+        "colors": {
+          "label": {
+            "R": 196,
+            "G": 48,
+            "B": 48
+          },
+          "text": {
+            "R": 196,
+            "G": 48,
+            "B": 48
+          }
+        }
+      },
+      "profile": {
+        "name": "YouTube Deva",
+        "describe": "YouTube Deva Buddy",
+        "emoji": "/public/devas/youtube/emoji.png",
+        "avatar": "/public/devas/youtube/avatar.png",
+        "background": "/public/devas/youtube/background.jpg",
+        "gender": "M",
+        "voice": "Brian"
+      }
+    },
+    "vars": {
+      "messages": {
+        "init": "🟠 INIT",
+        "start": "🔵 START",
+        "enter": "🟢 ENTER",
+        "stop": "🔴 STOP",
+        "exit": "🟡 EXIT",
+        "done": "🟣 DONE",
+        "error": "💣 ERROR!",
+        "ready": "⭐️ READY!",
+        "params": "⛔️ NO PARAMS!",
+        "packet": "⛔️ NO PACKET!",
+        "opts": "⛔️ NO OPTIONS!",
+        "active": "⛔️ YOUTUBE INACTIVE!",
+        "auth": "✅ AUTH COMPLETE",
+        "acct": "Youtube acct switched.",
+        "accterr": "That is not a valid account.",
+        "chatid": "🤝",
+        "chatreset": "Live Chat Reset",
+        "nochat": "There is no active live chat.",
+        "livechat": "The live chat has been set.",
+        "reply": "ParentId is not set.",
+        "labels": {
+          "video": "Video",
+          "channel": "Channel",
+          "comments": "View Comments",
+          "comment": "Write Comment",
+          "tweet": "Tweet",
+          "livechat": "Live Chat",
+          "playlist": "Playlist",
+          "like": "👍"
+        },
+        "quota": "ERROR - API Quote Limit"
+      },
+      "context": {
+        "uid": "Generating uid",
+        "status": "Getting status",
+        "info": "Getting info",
+        "feature": "Accessing feature",
+        "issue": "Has issues",
+        "help": "Asking for help",
+        "comments": "Get video comments",
+        "replies": "Get comment replies",
+        "comment": "Write video comment",
+        "reply": "Reply to video comment",
+        "playlist": "Get playlist items",
+        "channel": "Get channel info",
+        "search": "Video search",
+        "streams": "List streatms",
+        "stream": "Set stream",
+        "messages": "Live stream messages",
+        "chatid": "Set live chat id",
+        "chat": "Send chat message",
+        "chats": "Send chat message",
+        "video": "Get video details",
+        "subs": "Get subscriptions",
+        "acct": "Set the account",
+        "rate": "Get account rate",
+        "livechat": "Live chat message",
+        "feecting": "Parse feecting",
+        "insert": "Insert function",
+        "error": "Error talking"
+      },
+      "chats": false,
+      "active": false,
+      "scopes": [
+        "https://www.googleapis.com/auth/youtube",
+        "https://www.googleapis.com/auth/youtube.readonly",
+        "https://www.googleapis.com/auth/youtube.force-ssl"
+      ],
+      "acct": {
+        "key": "quinn",
+        "index": 0
+      },
+      "errors": {
+        "quota": "quotaExceeded"
+      },
+      "maxResults": 25,
+      "order": "relevance",
+      "type": "video",
+      "polling": {
+        "liveChatMessages": 10
+      },
+      "promoter": {
+        "timer": false,
+        "timing": 1
+      },
+      "params": {
+        "silence": {
+          "max": 10,
+          "tracker": 0
+        },
+        "search": {
+          "part": "id,snippet",
+          "maxResults": 10,
+          "order": "date",
+          "type": "video",
+          "region": "US",
+          "lang": "en",
+          "event": "live"
+        },
+        "video": {
+          "part": "id, snippet, statistics, status, liveStreamingDetails"
+        },
+        "channel": {
+          "mine": true,
+          "id": false,
+          "part": "id,snippet,contentDetails,statistics"
+        },
+        "comments": {
+          "videoId": false,
+          "part": "id, snippet",
+          "maxResults": 10,
+          "textFormat": "plainText"
+        },
+        "replies": {
+          "parentId": false,
+          "part": "id, snippet",
+          "maxResults": 10,
+          "textFormat": "plainText"
+        },
+        "comment": {
+          "channelId": false,
+          "videoId": false,
+          "part": "id, snippet"
+        },
+        "reply": {
+          "parentId": false,
+          "part": "id, snippet"
+        },
+        "subscriptions": {
+          "mine": true,
+          "channelId": false,
+          "part": "id,snippet"
+        },
+        "playlists": {
+          "mine": true,
+          "part": "id, snippet, contentDetails, status",
+          "maxResults": 20
+        },
+        "playlist": {
+          "playlistId": false,
+          "maxResults": 10,
+          "part": "id,snippet,contentDetails, status"
+        },
+        "liveChatMessages": {
+          "liveChatId": false,
+          "maxResults": 25,
+          "part": "id,snippet,authorDetails"
+        },
+        "rate": {
+          "id": false,
+          "rating": "like"
+        }
+      }
+    }
+  }
 }

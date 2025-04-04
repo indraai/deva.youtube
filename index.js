@@ -1,30 +1,32 @@
 // Copyright (c)2023 Quinn Michaels
 // Youtube Deva
-const fs = require('fs');
-const path = require('path');
+import Deva from '@indra.ai/deva';
+import pkg from './package.json' with {type:'json'};
 
-const {google} = require('googleapis');
+import {google} from 'googleapis';
 const Oauth2 = google.auth.OAuth2;
 
-const package = require('./package.json');
+// set the __dirname
+import {dirname} from 'node:path';
+import {fileURLToPath} from 'node:url';    
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
 const info = {
-  id: package.id,
-  name: package.name,
-  describe: package.description,
-  version: package.version,
-  url: package.homepage,
+  id: pkg.id,
+  name: pkg.name,
+  describe: pkg.description,
+  version: pkg.version,
+  url: pkg.homepage,
   dir: __dirname,
-  git: package.repository.url,
-  bugs: package.bugs.url,
-  author: package.author,
-  license: package.license,
-  copyright: package.copyright,
+  git: pkg.repository.url,
+  bugs: pkg.bugs.url,
+  author: pkg.author,
+  license: pkg.license,
+  copyright: pkg.copyright,
 };
 
-const data_path = path.join(__dirname, 'data.json');
-const {agent,vars} = require(data_path).data;
+const {agent,vars} = pkg.data;
 
-const Deva = require('@indra.ai/deva');
 const YOUTUBE = new Deva({
   info,
   agent,
@@ -970,11 +972,18 @@ const YOUTUBE = new Deva({
     },
   },
 
-  onDone(data) {
+  onReady(data, resolve) {
     this.func.setAuth().catch(err => {
       this.error(err);
     });
-    return Promise.resolve(data);
+    this.prompt(this.vars.messages.ready);
+    return resolve(data);
+  },
+  
+  onError(err, data, reject) {
+    this.prompt(this.vars.messages.error);
+    console.log(err);
+    return reject(err);
   },
 });
-module.exports = YOUTUBE
+export default YOUTUBE
