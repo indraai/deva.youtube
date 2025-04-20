@@ -22,7 +22,7 @@
     "url": "https://github.com/indraai/deva.youtube/issues"
   },
   "dependencies": {
-    "@indra.ai/deva": "^1.5.33",
+    "@indra.ai/deva": "^1.5.34",
     "googleapis": "^148.0.0"
   },
   "homepage": "https://github.com/indraai/deva.youtube#readme",
